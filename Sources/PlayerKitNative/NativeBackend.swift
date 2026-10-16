@@ -83,7 +83,7 @@ enum SeekFrameGate {
 
 @MainActor
 public final class NativeBackend: PlayerBackend {
-    public private(set) var state = PlayerState()
+    public internal(set) var state = PlayerState()
     public private(set) var videoWidth: Int = 0
     public private(set) var videoHeight: Int = 0
     private var codedVideoWidth: Int = 0
@@ -3147,6 +3147,10 @@ public final class NativeBackend: PlayerBackend {
         assRenderer = nil
         chapters = []  // container chapters are per-session (zyno#101)
         state = PlayerState()
+        // Player.state is only a copy refreshed via onStateChange; without this push the
+        // previous video's subtitle lingers in the UI until the next ≥500ms position
+        // notification of the new session (zyno#206).
+        notifyStateChange()
     }
 
     public func setVolume(_ volume: Double) { state.volume = volume; notifyStateChange() }
